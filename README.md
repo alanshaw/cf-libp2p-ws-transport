@@ -19,7 +19,6 @@ import { createLibp2p } from 'libp2p'
 import { WebSockets } from '@web3-storage/cf-libp2p-ws-transport'
 import { Mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
-import { createFromJSON } from '@libp2p/peer-id-factory'
 
 const listenAddr = '/ip4/127.0.0.1/tcp/1234/ws'
 const echoProtocol = '/test/echo/1.0.0'
