@@ -1,0 +1,57 @@
+{
+  "name": "cf-libp2p-ws-transport",
+  "version": "0.0.0",
+  "description": "Libp2p WebSocket transport for Cloudflare WebSockets",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:build && npm run test:runner",
+    "test:build": "esbuild --format=esm --bundle --outfile=./test/helpers/worker.bundle.js ./test/helpers/worker.js",
+    "test:runner": "ava --verbose"
+  },
+  "keywords": [
+    "libp2p",
+    "websockets",
+    "cloudflare",
+    "transport",
+    "ipfs"
+  ],
+  "author": "Alan Shaw",
+  "license": "Apache-2.0 OR MIT",
+  "dependencies": {
+    "@libp2p/interface-transport": "^1.0.2",
+    "@libp2p/interfaces": "^3.0.3",
+    "@multiformats/mafmt": "^11.0.2",
+    "@multiformats/multiaddr": "^10.2.1",
+    "event-iterator": "^2.0.0"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "^7.0.1",
+    "@libp2p/mplex": "^1.2.1",
+    "@libp2p/peer-id-factory": "^1.0.15",
+    "@libp2p/websockets": "^3.0.0",
+    "ava": "^4.3.0",
+    "esbuild": "^0.14.48",
+    "it-pipe": "^2.0.3",
+    "libp2p": "^0.37.3",
+    "miniflare": "^2.5.1",
+    "standard": "^17.0.0",
+    "uint8arrays": "^3.0.0"
+  },
+  "ava": {
+    "nodeArguments": [
+      "--experimental-vm-modules"
+    ]
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanshaw/cf-libp2p-ws-transport.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alanshaw/cf-libp2p-ws-transport/issues"
+  },
+  "homepage": "https://github.com/alanshaw/cf-libp2p-ws-transport#readme"
+}
