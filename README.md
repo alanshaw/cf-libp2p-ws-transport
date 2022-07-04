@@ -16,7 +16,7 @@ npm install cf-libp2p-ws-transport
 ```js
 
 import { createLibp2p } from 'libp2p'
-import { WebSockets } from '@web3-storage/cf-libp2p-ws-transport'
+import { WebSockets } from 'cf-libp2p-ws-transport'
 import { Mplex } from '@libp2p/mplex'
 import { pipe } from 'it-pipe'
 

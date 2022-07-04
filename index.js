@@ -17,7 +17,7 @@ const CODE_P2P = 421
  */
 export class WebSockets {
   get [Symbol.toStringTag] () {
-    return '@web3-storage/cf-libp2p-ws-transport'
+    return 'cf-libp2p-ws-transport'
   }
 
   get [symbol] () {
