@@ -1,6 +1,6 @@
 {
   "name": "cf-libp2p-ws-transport",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Libp2p WebSocket transport for Cloudflare WebSockets",
   "main": "index.js",
   "type": "module",
