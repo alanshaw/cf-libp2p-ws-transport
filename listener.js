@@ -2,6 +2,7 @@
 /* global WebSocketPair */
 
 import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
+import { Multiaddr } from '@multiformats/multiaddr'
 import { socketToMaConn } from './utils.js'
 
 /**
@@ -44,16 +45,17 @@ export class WebSocketListener extends EventEmitter {
     const [client, server] = Object.values(webSocketPair)
 
     server.accept()
-    this._onOpen(server)
+    this._onOpen(server, getRemoteAddr(request))
 
     return new Response(null, { status: 101, webSocket: client })
   }
 
   /**
    * @param {WebSocket} socket
+   * @param {Multiaddr} remoteAddr
    */
-  async _onOpen (socket) {
-    const maConn = socketToMaConn(socket)
+  async _onOpen (socket, remoteAddr) {
+    const maConn = socketToMaConn(socket, remoteAddr)
     this._connections.add(maConn)
     socket.addEventListener('close', () => this._connections.delete(maConn))
     try {
@@ -82,4 +84,11 @@ export class WebSocketListener extends EventEmitter {
     this._connections.forEach(maConn => maConn.close())
     this._connections = new Set()
   }
+}
+
+function getRemoteAddr (request) {
+  const connectingIp = request.headers.get('cf-connecting-ip') || '0.0.0.0'
+  const protocol = connectingIp.includes(':') ? 'ip6' : 'ip4'
+  const transport = request.url.startsWith('https://') ? 'wss' : 'ws'
+  return new Multiaddr(`/${protocol}/${connectingIp}/${transport}`)
 }

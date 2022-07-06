@@ -6,9 +6,10 @@ import { EventIterator } from 'event-iterator'
 
 /**
  * @param {WebSocket} socket
+ * @param {Multiaddr} remoteAddr
  * @returns {MultiaddrConnection}
  */
-export function socketToMaConn (socket) {
+export function socketToMaConn (socket, remoteAddr) {
   /** @type {MultiaddrConnection} */
   const maConn = {
     async sink (source) {
@@ -42,7 +43,7 @@ export function socketToMaConn (socket) {
       }
     })(),
 
-    remoteAddr: null, // TODO?
+    remoteAddr,
 
     timeline: { open: Date.now() },
 
