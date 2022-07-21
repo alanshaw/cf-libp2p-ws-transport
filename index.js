@@ -1,19 +1,16 @@
 /* eslint-env worker */
 
-import { symbol } from '@libp2p/interface-transport'
+import { symbol } from '@libp2p/interfaces/transport'
 import * as mafmt from '@multiformats/mafmt'
 import { Multiaddr } from '@multiformats/multiaddr'
+import { multiaddrToUri } from '@multiformats/multiaddr-to-uri'
 import { WebSocketListener } from './listener.js'
-
-/**
- * @typedef {import('@libp2p/interface-transport').Transport} Transport
- * @typedef {import('@libp2p/interface-transport').CreateListenerOptions} CreateListenerOptions
- */
+import { socketToMaConn } from './utils.js'
 
 const CODE_P2P = 421
 
 /**
- * @implements {Transport}
+ * @implements {import('@libp2p/interfaces/transport').Transport}
  */
 export class WebSockets {
   get [Symbol.toStringTag] () {
@@ -29,12 +26,32 @@ export class WebSockets {
     this._listeners = []
   }
 
-  async dial () {
-    throw new Error('not implemented')
+  /**
+   * @param {Multiaddr} addr
+   * @param {import('@libp2p/interfaces/transport').DialOptions} options
+   */
+  async dial (addr, { upgrader }) {
+    const url = multiaddrToUri(addr).replace('ws:', 'http:').replace('wss:', 'https:')
+
+    // Make a fetch request including `Upgrade: websocket` header.
+    // The Workers Runtime will automatically handle other requirements
+    // of the WebSocket protocol, like the Sec-WebSocket-Key header.
+    const res = await fetch(url, { headers: { Upgrade: 'websocket' } })
+
+    // If the WebSocket handshake completed successfully, then the
+    // response has a `webSocket` property.
+    const socket = res.webSocket
+    if (!socket) throw new Error('server did not accept WebSocket')
+
+    // Call accept() to indicate that you'll be handling the socket here
+    // in JavaScript, as opposed to returning it on to a client.
+    socket.accept()
+
+    return upgrader.upgradeOutbound(socketToMaConn(socket, addr))
   }
 
   /**
-   * @param {CreateListenerOptions} options
+   * @param {import('@libp2p/interfaces/transport').CreateListenerOptions} options
    */
   createListener (options) {
     const listener = new WebSocketListener(options)

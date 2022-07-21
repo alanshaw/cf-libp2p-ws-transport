@@ -15,6 +15,7 @@ export function socketToMaConn (socket, remoteAddr) {
     async sink (source) {
       try {
         for await (const chunk of source) {
+          if (maConn.timeline.close) break // do not try to send if closed
           socket.send(chunk)
         }
       } catch (err) {

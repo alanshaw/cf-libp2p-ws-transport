@@ -86,6 +86,9 @@ export class WebSocketListener extends EventEmitter {
   }
 }
 
+/**
+ * @param {Request} request
+ */
 function getRemoteAddr (request) {
   const connectingIp = request.headers.get('cf-connecting-ip') || '0.0.0.0'
   const protocol = connectingIp.includes(':') ? 'ip6' : 'ip4'

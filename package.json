@@ -19,10 +19,10 @@
   "author": "Alan Shaw",
   "license": "Apache-2.0 OR MIT",
   "dependencies": {
-    "@libp2p/interface-transport": "^1.0.2",
-    "@libp2p/interfaces": "^3.0.3",
+    "@libp2p/interfaces": "^2.0.4",
     "@multiformats/mafmt": "^11.0.2",
     "@multiformats/multiaddr": "^10.2.1",
+    "@multiformats/multiaddr-to-uri": "^9.0.1",
     "event-iterator": "^2.0.0"
   },
   "devDependencies": {
