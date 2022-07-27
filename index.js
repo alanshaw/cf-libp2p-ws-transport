@@ -30,13 +30,13 @@ export class WebSockets {
    * @param {Multiaddr} addr
    * @param {import('@libp2p/interfaces/transport').DialOptions} options
    */
-  async dial (addr, { upgrader }) {
+  async dial (addr, { signal, upgrader }) {
     const url = multiaddrToUri(addr).replace('ws:', 'http:').replace('wss:', 'https:')
 
     // Make a fetch request including `Upgrade: websocket` header.
     // The Workers Runtime will automatically handle other requirements
     // of the WebSocket protocol, like the Sec-WebSocket-Key header.
-    const res = await fetch(url, { headers: { Upgrade: 'websocket' } })
+    const res = await fetch(url, { headers: { Upgrade: 'websocket' }, signal })
 
     // If the WebSocket handshake completed successfully, then the
     // response has a `webSocket` property.
