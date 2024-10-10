@@ -19,7 +19,11 @@ export function socketToMaConn (socket, remoteAddr, config) {
       try {
         for await (const chunk of source) {
           if (maConn.timeline.close) break // do not try to send if closed
-          socket.send(chunk.subarray())
+          if (chunk instanceof Uint8Array) {
+            socket.send(chunk)
+          } else {
+            socket.send(chunk.subarray())
+          }
         }
       } catch (err) {
         if (err.type !== 'aborted') {
