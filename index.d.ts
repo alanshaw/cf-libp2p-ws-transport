@@ -10,6 +10,8 @@ export type WebSocketsDialEvents =
   ProgressEvent<'websockets:open-connection'>
 
 export declare class WebSockets implements Transport<WebSocketsDialEvents> {
+  constructor (components: WebSocketsComponents, init?: WebSocketsInit)
+
   /**
    * Used to identify the transport.
    */
