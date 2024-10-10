@@ -103,5 +103,6 @@ function getRemoteAddr (request) {
   const connectingIp = request.headers.get('cf-connecting-ip') || '0.0.0.0'
   const protocol = connectingIp.includes(':') ? 'ip6' : 'ip4'
   const transport = request.url.startsWith('https://') ? 'wss' : 'ws'
-  return multiaddr(`/${protocol}/${connectingIp}/${transport}`)
+  const port = request.url.startsWith('https://') ? '443' : '80'
+  return multiaddr(`/${protocol}/${connectingIp}/tcp/${port}/${transport}`)
 }
