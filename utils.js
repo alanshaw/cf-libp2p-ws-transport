@@ -1,26 +1,29 @@
 import { EventIterator } from 'event-iterator'
 
 /**
- * @typedef {import('@libp2p/interface-connection').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('@libp2p/interface').MultiaddrConnection} MultiaddrConnection
  */
 
 /**
  * @param {WebSocket} socket
  * @param {Multiaddr} remoteAddr
+ * @param {{ logger: import('@libp2p/interface').ComponentLogger }} config
  * @returns {MultiaddrConnection}
  */
-export function socketToMaConn (socket, remoteAddr) {
+export function socketToMaConn (socket, remoteAddr, config) {
+  const log = config.logger.forComponent('libp2p:websockets:maconn')
+
   /** @type {MultiaddrConnection} */
   const maConn = {
     async sink (source) {
       try {
         for await (const chunk of source) {
           if (maConn.timeline.close) break // do not try to send if closed
-          socket.send(chunk)
+          socket.send(chunk.subarray())
         }
       } catch (err) {
         if (err.type !== 'aborted') {
-          console.error(err)
+          log.error(err)
         }
       }
     },
@@ -48,11 +51,20 @@ export function socketToMaConn (socket, remoteAddr) {
 
     timeline: { open: Date.now() },
 
-    async close (err) {
-      if (err) console.error(err)
+    async close () {
       socket.close()
       maConn.timeline.close = Date.now()
-    }
+    },
+
+    abort (err) {
+      const { host, port } = maConn.remoteAddr.toOptions()
+      log('closing stream to %s:%s due to error', host, port, err)
+
+      socket.close(1008)
+      maConn.timeline.close = Date.now()
+    },
+
+    log
   }
 
   socket.addEventListener('close', () => {
@@ -61,7 +73,7 @@ export function socketToMaConn (socket, remoteAddr) {
     if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
-  })
+  }, { once: true })
 
   return maConn
 }

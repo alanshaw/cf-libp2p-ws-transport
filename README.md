@@ -17,7 +17,8 @@ npm install cf-libp2p-ws-transport
 
 import { createLibp2p } from 'libp2p'
 import { WebSockets } from 'cf-libp2p-ws-transport'
-import { Mplex } from '@libp2p/mplex'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { pipe } from 'it-pipe'
 
 const listenAddr = '/ip4/127.0.0.1/tcp/1234/ws'
@@ -25,17 +26,18 @@ const echoProtocol = '/test/echo/1.0.0'
 
 export default {
   async fetch (request) {
-    const wsTransport = new WebSockets()
+    let wsTransport
     const node = await createLibp2p({
       addresses: { listen: [listenAddr] },
-      transports: [wsTransport],
-      streamMuxers: [new Mplex()],
-      connectionEncryption: [new Noise()]
+      transports: [components => {
+        wsTransport = new WebSockets(components)
+        return wsTransport
+      }],
+      streamMuxers: [yamux()],
+      connectionEncrypters: [noise()]
     })
 
     node.handle(echoProtocol, ({ stream }) => pipe(stream, stream))
-
-    await node.start()
 
     const listener = wsTransport.listenerForMultiaddr(listenAddr)
     return listener.handleRequest(request)

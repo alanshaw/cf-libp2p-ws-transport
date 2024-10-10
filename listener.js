@@ -1,27 +1,32 @@
-/* eslint-env worker */
+/* eslint-env browser */
 /* global WebSocketPair */
-
-import { EventEmitter, CustomEvent } from '@libp2p/interfaces/events'
-import { Multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter } from '@libp2p/interface'
+import { multiaddr } from '@multiformats/multiaddr'
 import { socketToMaConn } from './utils.js'
 
 /**
- * @typedef {import('@libp2p/interface-transport').Listener} Listener
+ * @typedef {import('@libp2p/interface').Listener} Listener
  * @typedef {import('@multiformats/multiaddr').Multiaddr} Multiaddr
- * @typedef {import('@libp2p/interface-connection').MultiaddrConnection} MultiaddrConnection
- * @typedef {import('@libp2p/interface-transport').CreateListenerOptions} CreateListenerOptions
+ * @typedef {import('@libp2p/interface').MultiaddrConnection} MultiaddrConnection
+ * @typedef {import('./listener.js').WebSocketListenerComponents} WebSocketListenerComponents
+ * @typedef {import('./listener.js').WebSocketListenerInit} WebSocketListenerInit
  */
 
 /**
  * @implements {Listener}
  */
-export class WebSocketListener extends EventEmitter {
+export class WebSocketListener extends TypedEventEmitter {
   /**
-   * @param {CreateListenerOptions} init
+   * @param {WebSocketListenerComponents} components
+   * @param {WebSocketListenerInit} init
    */
-  constructor (init) {
+  constructor (components, init) {
     super()
-    /** @type {CreateListenerOptions} */
+
+    this.log = components.logger.forComponent('libp2p:websockets:listener')
+    this.components = components
+
+    /** @type {WebSocketListenerInit} */
     this._init = init
     /** @type {Multiaddr} */
     this._listeningAddr = null
@@ -55,15 +60,20 @@ export class WebSocketListener extends EventEmitter {
    * @param {Multiaddr} remoteAddr
    */
   async _onOpen (socket, remoteAddr) {
-    const maConn = socketToMaConn(socket, remoteAddr)
+    const maConn = socketToMaConn(socket, remoteAddr, { logger: this.components.logger })
+    this.log('new inbound connection %s', maConn.remoteAddr)
     this._connections.add(maConn)
-    socket.addEventListener('close', () => this._connections.delete(maConn))
+    socket.addEventListener('close', () => {
+      this.log('inbound connection %s closed', maConn.remoteAddr)
+      this._connections.delete(maConn)
+    }, { once: true })
     try {
       const conn = await this._init.upgrader.upgradeInbound(maConn)
+      this.log('inbound connection %s upgraded', maConn.remoteAddr)
       if (this._init.handler) this._init.handler(conn)
       this.dispatchEvent(new CustomEvent('connection', { detail: conn }))
     } catch (err) {
-      console.error(err)
+      this.log.error('inbound connection failed to upgrade', err)
       maConn.close()
     }
   }
@@ -93,5 +103,5 @@ function getRemoteAddr (request) {
   const connectingIp = request.headers.get('cf-connecting-ip') || '0.0.0.0'
   const protocol = connectingIp.includes(':') ? 'ip6' : 'ip4'
   const transport = request.url.startsWith('https://') ? 'wss' : 'ws'
-  return new Multiaddr(`/${protocol}/${connectingIp}/${transport}`)
+  return multiaddr(`/${protocol}/${connectingIp}/${transport}`)
 }

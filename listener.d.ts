@@ -1,4 +1,10 @@
-import { Listener } from '@libp2p/interface-transport'
+import { ComponentLogger, CreateListenerOptions, Listener } from '@libp2p/interface'
+
+export interface WebSocketListenerInit extends CreateListenerOptions {}
+
+export interface WebSocketListenerComponents {
+  logger: ComponentLogger
+}
 
 export interface WebSocketListener extends Listener {
   /**
