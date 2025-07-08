@@ -15,6 +15,7 @@ import { socketToMaConn } from './utils.js'
 
 const CODE_P2P = 421
 const CODE_CIRCUIT = 290
+const CODE_HTTP_PATH = 481
 
 /**
  * @implements {WebSocketsTransport}
@@ -119,7 +120,7 @@ export class WebSockets {
       if (ma.protoCodes().includes(CODE_CIRCUIT)) {
         return false
       }
-      ma = ma.decapsulateCode(CODE_P2P)
+      ma = ma.decapsulateCode(CODE_P2P).decapsulateCode(CODE_HTTP_PATH)
       return mafmt.WebSockets.matches(ma) || mafmt.WebSocketsSecure.matches(ma)
     })
   }
